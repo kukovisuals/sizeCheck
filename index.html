@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>fred</title>
+	<style type="text/css">
+		.form-allfields{
+			border:1px solid black;
+			display: grid;
+			grid-template-columns: repeat(2, 1fr);
+			gap: 7px;
+		}
+		.form-container{
+			position:relative;
+		}
+		.form-container input{
+			position:absolute;
+			overflow:hidden;
+			width:1px;
+			height:1px;
+		}
+		.form-container label{
+		  background: rgb(255, 255, 255);
+		  color: rgb(17, 17, 17);
+		  box-shadow: rgb(229 229 229) 0px 0px 0px 1px;
+			-webkit-box-flex: 1;
+			flex-grow: 1;
+			display: flex;
+			-webkit-box-align: center;
+			align-items: center;
+			-webkit-box-pack: center;
+		}
+		.form-container input[type="radio"]:checked + label {
+    	box-shadow: rgb(17 17 17) 0px 0px 0px 1px inset;
+		}
+		.form-sm-lbnl2{
+			height: 48px;
+	    border-radius: 4px;
+		}
+		.form-allfields input[type="radio"]:disabled + label {
+	    cursor: default;
+	    color: rgb(221, 221, 221);
+	    background: rgb(247, 247, 247);
+	    border: none;
+		}
+	</style>
+</head>
+<body>
+	<div>
+		<form id="addToCartTool">
+	  	<fieldset>
+		    <legend>Choose your favorite monster</legend>
+		    <div class="form-allfields">
+			    <div class="form-container">
+				    <input type="radio" id="form-xs" name="sizing" value="39309126795308:XS">
+				    <label data-id="39309126795308" class="form-sm-lbnl2" tabindex="-1" for="form-xs">XS</label>
+			    </div>
+			    <div class="form-container">
+				    <input type="radio" id="form-sm" name="sizing" value="39309126828076:SM">
+				    <label  class="form-sm-lbnl2" tabindex="-1" for="form-sm">SM</label>
+			    </div>
+			    <div class="form-container">
+				    <input type="radio" id="form-md" name="sizing" value="39309126860844:MD" />
+				    <label  class="form-sm-lbnl2" tabindex="-1" for="form-md">MD</label>
+			    </div>
+		    </div>
+		    <button>
+		    	ADD TO CART
+		    </button>
+	  	</fieldset>
+		</form>
+	</div>
+	<div>
+		<span id="draw"></span>
+	</div>
+	<script type="text/javascript">
+		const formAdd = document.getElementById('addToCartTool')
+		const draw = document.getElementById('draw')
+
+		const id = '6552036835372'
+		const checkUrl = 'https://inventorylocations.checkmyapp.net'
+		const checkUri = 'inventory/products/eby-by-sofia-vergara.myshopify.com'
+		let arr = []
+		fetchStockCheck(`${checkUrl}/${checkUri}/[${id}]`)
+	
+		formAdd.addEventListener('submit', (event) => formSubmit(event), false)
+
+		function sizeFx(){
+			const data = new FormData(formAdd)
+			let output = ""
+			console.log(data)
+			for (const entry of data){
+				output = `${output}${entry[0]}=${entry[1]}\r`;
+			}
+			draw.innerText = output
+		}
+
+		function formSubmit(event){
+			event.preventDefault();
+		}
+
+		function fetchStockCheck(url) {
+			fetch(url)
+			  .then((response) => response.json())
+			  .then((data) => {
+					checkPdp(data)	  	
+			  })
+			  .catch(error => console.error('Error while Fetching stock ', error))
+		}
+
+	  function checkPdp(data){
+	  	const obj = data[id].product.variants
+	  	for(const el in obj){
+	  		// id = size id
+				const sizeId = obj[el].id
+				// invnetoryItem.locations[0].available = sizes available in wearhouse
+				const available =  (Number(obj[el].inventoryItem.locations[0].available) > 1 )
+				if(available){
+					draw.innerText += sizeId + ' -> available\r'  
+				} else {
+					const sizeSelector = document.getElementById(`form-${obj[el].title}`)
+					sizeSelector.setAttribute('disabled',"")
+					draw.innerText += sizeId + ' -> DISABLE\r'
+				}
+	  		console.log(Number(obj[el].inventoryItem.locations[0].available) )
+	  		console.log(sizeId)
+	  		console.log(obj[el].title)
+	  	}
+	  }
+
+
+	</script>
+</body>
+</html>
